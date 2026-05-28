@@ -2,11 +2,13 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+import dj_database_url
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key-change-in-production-abc123')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key')
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
@@ -57,18 +59,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'breathe_esg.wsgi.application'
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    import dj_database_url
-    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+    )
+}
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -132,7 +128,3 @@ EMISSION_FACTORS = {
     'taxi_km': 0.149,
     'train_km': 0.041,
 }
-
-import dj_database_url
-DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
-
